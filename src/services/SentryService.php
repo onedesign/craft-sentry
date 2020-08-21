@@ -38,11 +38,16 @@ class SentryService extends Component
             $dsn = Sentry::$plugin->getSettings()->getClientDsn();
             $environment = Sentry::$plugin->getSettings()->getEnvironment();
 
+            $release = \getenv('RELEASE_NUMBER');
+            if (!$release) {
+                $release = null;
+            }
+
             init(
                 [
                     'dsn' => $dsn,
                     'environment' => $environment,
-                    'release' => \getenv('RELEASE_NUMBER'),
+                    'release' => release,
                 ]
             );
 
