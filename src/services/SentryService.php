@@ -34,7 +34,12 @@ class SentryService extends Component
             $exception = $previousException;
         }
 
-        if ($this->canReport($exception->statusCode)) {
+        $statusCode = null;
+        if (\property_exists($exception, 'statusCode')) {
+            $statusCode = $exception->statusCode;
+        }
+
+        if ($this->canReport($statusCode)) {
             $dsn = Sentry::$plugin->getSettings()->getClientDsn();
             $environment = Sentry::$plugin->getSettings()->getEnvironment();
 
@@ -52,7 +57,7 @@ class SentryService extends Component
             );
 
             configureScope(
-                function (Scope $scope) use ($exception): void {
+                function (Scope $scope) use ($exception, $statusCode): void {
                     $user = Craft::$app->getUser()->getIdentity();
 
                     if ($user) {
@@ -66,7 +71,7 @@ class SentryService extends Component
                     }
 
                     $scope->setTag('app', 'Craft CMS');
-                    $scope->setTag('status_code', $exception->statusCode);
+                    $scope->setTag('status_code', $statusCode);
 
                     $scope->setExtra('Craft Name', Craft::$app->getInfo()->name);
                     $scope->setExtra('Craft Edition (licensed)', Craft::$app->getLicensedEditionName());
