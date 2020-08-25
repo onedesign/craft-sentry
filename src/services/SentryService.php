@@ -47,7 +47,7 @@ class SentryService extends Component
                 [
                     'dsn' => $dsn,
                     'environment' => $environment,
-                    'release' => release,
+                    'release' => $release,
                 ]
             );
 
