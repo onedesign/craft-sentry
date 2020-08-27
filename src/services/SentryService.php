@@ -7,6 +7,8 @@ use craft\base\Component;
 use lukeyouell\sentry\Sentry;
 use Sentry\State\Scope;
 use Twig\Error\RuntimeError;
+use function getenv;
+use function property_exists;
 use function Sentry\captureException;
 use function Sentry\configureScope;
 use function Sentry\init;
@@ -35,7 +37,7 @@ class SentryService extends Component
         }
 
         $statusCode = null;
-        if (\property_exists($exception, 'statusCode')) {
+        if (property_exists($exception, 'statusCode') && $exception->statusCode) {
             $statusCode = $exception->statusCode;
         }
 
@@ -43,7 +45,7 @@ class SentryService extends Component
             $dsn = Sentry::$plugin->getSettings()->getClientDsn();
             $environment = Sentry::$plugin->getSettings()->getEnvironment();
 
-            $release = \getenv('RELEASE_NUMBER');
+            $release = getenv('RELEASE_NUMBER');
             if (!$release) {
                 $release = null;
             }
@@ -71,7 +73,9 @@ class SentryService extends Component
                     }
 
                     $scope->setTag('app', 'Craft CMS');
-                    $scope->setTag('status_code', $statusCode);
+                    if ($statusCode) {
+                        $scope->setTag('status_code', $statusCode);
+                    }
 
                     $scope->setExtra('Craft Name', Craft::$app->getInfo()->name);
                     $scope->setExtra('Craft Edition (licensed)', Craft::$app->getLicensedEditionName());
@@ -85,7 +89,7 @@ class SentryService extends Component
         }
     }
 
-    private function canReport($statusCode = null, $dsn = null)
+    private function canReport($statusCode = null)
     {
         $canReport = true;
         $message = null;
